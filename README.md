@@ -43,7 +43,7 @@ Create a new sub database.
 
 Public API is a subset of the HyperDB API. Supported methods are:
 
-`get`, `put`, `del`, `batch`, `createReadStream`, `createWriteStream` 
+`get`, `put`, `del`, `batch`, `list`, `createReadStream`, `createWriteStream`, `replicate`
 
 Support for more methods (e.g. `createDiffStream`, `createHistoryStream`) is TODO.
 

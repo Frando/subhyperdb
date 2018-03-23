@@ -5,4 +5,3 @@ db
 *.log
 NOTES.txt
 .idea
-package-lock.json

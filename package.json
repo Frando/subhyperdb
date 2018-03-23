@@ -1,6 +1,6 @@
 {
   "name": "subhyperdb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Namespace a hyperdb into prefixed sections that may have different valueEncodings.",
   "main": "index.js",
   "scripts": {
