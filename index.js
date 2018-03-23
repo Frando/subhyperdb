@@ -61,14 +61,13 @@ SubHyperDB.prototype.list = function (prefix, opts, cb) {
 }
 
 SubHyperDB.prototype.createReadStream = function (prefix, opts) {
-  var self = this
-  prefix = this._encodeKey(prefix)
+  var decoder = decodeAndReturn(this)
   var transform = new Transform({objectMode: true})
   transform._transform = function (nodes, enc, next) {
-    this.push(decodeAndReturn(self)(null, nodes))
+    this.push(decoder(null, nodes))
     next()
   }
-  return this.db.createReadStream(prefix, opts).pipe(transform)
+  return this.db.createReadStream(this._encodeKey(prefix), opts).pipe(transform)
 }
 
 SubHyperDB.prototype.createWriteStream = function (cb) {
@@ -119,7 +118,7 @@ SubHyperDB.prototype._decodeValue = function (value) {
 }
 
 SubHyperDB.prototype._encodeKey = function (key) {
-  if (key.slice(1) === '/') key = key.substring(1)
+  if (key && key.slice(1) === '/') key = key.substring(1)
   return this.prefix + key
 }
 
