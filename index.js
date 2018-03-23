@@ -39,57 +39,36 @@ SubHyperDB.prototype.replicate = function (opts) {
   return this.db.replicate(opts)
 }
 SubHyperDB.prototype.put = function (key, value, cb) {
-  var self = this
-  return this.db.put(this._encodeKey(key), this._encodeValue(value), function (err, node) {
-    if (err) return cb(err, node)
-    node = self._decodeNode(node)
-    cb(err, node)
-  })
+  return this.db.put(this._encodeKey(key), this._encodeValue(value), decodeAndReturn(this, cb))
 }
 
 SubHyperDB.prototype.get = function (key, opts, cb) {
   if (typeof opts === 'function') return this.get(key, null, opts)
-  var self = this
-  this.db.get(this._encodeKey(key), opts, function (err, nodes) {
-    if (err || !nodes) return cb(err, nodes)
-    if (!Array.isArray(nodes)) nodes = [nodes]
-    nodes = nodes.map(self._decodeNode.bind(self))
-    cb(err, nodes.length === 1 ? nodes[0] : nodes)
-  })
+  this.db.get(this._encodeKey(key), opts, decodeAndReturn(this, cb))
 }
 
 SubHyperDB.prototype.del = function (key, cb) {
-  this.db.del(this._encodeKey(key), cb)
+  this.db.del(this._encodeKey(key), decodeAndReturn(this, cb))
 }
 
 SubHyperDB.prototype.batch = function (batch, cb) {
   batch.map(this._encodeNode.bind(this))
-  this.db.batch(batch, cb)
+  this.db.batch(batch, decodeAndReturn(this, cb))
 }
 
 SubHyperDB.prototype.list = function (prefix, opts, cb) {
-  var self = this
-  prefix = this._encodeKey(prefix)
-  this.db.list(prefix, opts, function (err, nodes) {
-    if (err) cb(err, nodes)
-    if (!Array.isArray(nodes)) nodes = [nodes]
-    nodes = nodes.map(self._decodeNode.bind(self))
-    cb(err, nodes.length === 1 ? nodes[0] : nodes)
-  })
+  this.db.list(this._encodeKey(prefix), opts, decodeAndReturn(this, cb))
 }
 
 SubHyperDB.prototype.createReadStream = function (prefix, opts) {
   var self = this
-  prefix = prefix ? this.prefix + prefix : this.prefix
-  var stream = this.db.createReadStream(prefix, opts)
+  prefix = this._encodeKey(prefix)
   var transform = new Transform({objectMode: true})
   transform._transform = function (nodes, enc, next) {
-    if (!Array.isArray(nodes)) nodes = [nodes]
-    nodes = nodes.map(self._decodeNode.bind(self))
-    this.push(nodes.length === 1 ? nodes[0] : nodes)
+    this.push(decodeAndReturn(self)(null, nodes))
     next()
   }
-  return stream.pipe(transform)
+  return this.db.createReadStream(prefix, opts).pipe(transform)
 }
 
 SubHyperDB.prototype.createWriteStream = function (cb) {
@@ -120,14 +99,14 @@ SubHyperDB.prototype._createPrefix = function () {
 }
 
 SubHyperDB.prototype._encodeNode = function (node) {
-  node.key = this._encodeKey(node.key)
-  node.value = this._encodeValue(node.value)
+  if (node.key !== null) node.key = this._encodeKey(node.key)
+  if (node.value !== null) node.value = this._encodeValue(node.value)
   return node
 }
 
 SubHyperDB.prototype._decodeNode = function (node) {
-  node.key = this._decodeKey(node.key)
-  node.value = this._decodeValue(node.value)
+  if (node.key !== null) node.key = this._decodeKey(node.key)
+  if (node.value !== null) node.value = this._decodeValue(node.value)
   return node
 }
 
@@ -147,3 +126,17 @@ SubHyperDB.prototype._encodeKey = function (key) {
 SubHyperDB.prototype._decodeKey = function (key) {
   return key.slice(this.prefix.length)
 }
+
+function decodeAndReturn (subdb, cb) {
+  if (!cb) cb = noop
+  return function (err, nodes) {
+    if (err || !nodes) return cb(err, nodes)
+    if (!Array.isArray(nodes)) return cb(err, subdb._decodeNode(nodes))
+    nodes = nodes.map(subdb._decodeNode.bind(subdb))
+    nodes = nodes.length === 1 ? nodes[0] : nodes
+    cb(err, nodes)
+    return nodes
+  }
+}
+
+function noop () {}
