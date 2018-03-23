@@ -61,6 +61,7 @@ SubHyperDB.prototype.list = function (prefix, opts, cb) {
 }
 
 SubHyperDB.prototype.createReadStream = function (prefix, opts) {
+  if (!prefix) prefix = ''
   var decoder = decodeAndReturn(this)
   var transform = new Transform({objectMode: true})
   transform._transform = function (nodes, enc, next) {
