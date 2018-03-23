@@ -1,0 +1,30 @@
+{
+  "name": "subhyperdb",
+  "version": "1.0.0",
+  "description": "Namespace a hyperdb into prefixed sections that may have different valueEncodings.",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Frando/subhyperdb.git"
+  },
+  "author": "Franz Heinzmann",
+  "license": "MIT",
+  "dependencies": {
+    "bulk-write-stream": "^1.1.4",
+    "codecs": "^1.2.1",
+    "hyperdb": "^3.0.0-1",
+    "sodium-universal": "^2.0.0"
+  },
+  "devDependencies": {
+    "random-access-memory": "^2.4.0",
+    "standard": "^11.0.1",
+    "tape": "^4.9.0"
+  },
+  "bugs": {
+    "url": "https://github.com/Frando/subhyperdb/issues"
+  },
+  "homepage": "https://github.com/Frando/subhyperdb#readme"
+}
