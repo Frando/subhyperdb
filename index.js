@@ -17,7 +17,6 @@ function SubHyperDB (db, prefix, opts) {
   opts = opts || {}
 
   if (prefix && prefix.slice('-1') !== '/') prefix = prefix + '/'
-  if (prefix && prefix.slice('1') !== '~') prefix = '~' + prefix
   if (!prefix) prefix = this._createPrefix()
 
   this.db = db
